@@ -1,5 +1,7 @@
 package com.asr.example.vert.x.demo.route;
 
+import com.asr.example.vert.x.demo.dto.http.response.SayingDto;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,17 +16,11 @@ public class HelloWorldRoute {
       .handler(routingContext -> {
         routingContext.response()
           .putHeader("Content-Type", "application/json")
-          .end(createResponse());
+          .end(JsonObject.mapFrom(createResponse()).encode());
       });
   }
 
-  private static String createResponse() {
-    return """
-      {
-          "id": %s,
-          "content": "Hello, Stranger!"
-      }
-      """
-      .formatted(COUNT.getAndIncrement());
+  private static SayingDto createResponse() {
+    return new SayingDto(COUNT.getAndIncrement(), "Hello Stranger!");
   }
 }
