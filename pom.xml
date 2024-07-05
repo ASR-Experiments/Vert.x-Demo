@@ -51,10 +51,10 @@
       <artifactId>vertx-web</artifactId>
     </dependency>
 
+    <!-- For Configurations   -->
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-junit5</artifactId>
-      <scope>test</scope>
+      <artifactId>vertx-config</artifactId>
     </dependency>
 
     <!--  For Json APIs  -->
@@ -62,6 +62,13 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
