@@ -3,6 +3,6 @@
   <component name="SonarLintProjectSettings">
     <option name="bindingEnabled" value="true" />
     <option name="projectKey" value="ASR-Experiments_Vert.x-Demo" />
-    <option name="serverId" value="ASR Experiments" />
+    <option name="serverId" value="Personal Sonar" />
   </component>
 </project>
