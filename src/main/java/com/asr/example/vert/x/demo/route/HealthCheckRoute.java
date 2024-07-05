@@ -1,14 +1,11 @@
 package com.asr.example.vert.x.demo.route;
 
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
+import com.asr.example.vert.x.demo.handler.health.CustomHealthCheckHandler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.HealthChecks;
-import io.vertx.ext.healthchecks.Status;
 import io.vertx.ext.web.Router;
-
-import java.util.Map;
 
 public class HealthCheckRoute {
 
@@ -20,13 +17,7 @@ public class HealthCheckRoute {
 
     healthCheckHandler.register(
       "template-check",
-      future -> {
-        if (template.isEmpty()) {
-          future.complete(Status.KO().setData(new JsonObject(Map.of("template", "No template found"))));
-        } else {
-          future.complete(Status.OK().setData(new JsonObject(Map.of("template", template))));
-        }
-      });
+      new CustomHealthCheckHandler(template));
 
     web
       .get("/health")
