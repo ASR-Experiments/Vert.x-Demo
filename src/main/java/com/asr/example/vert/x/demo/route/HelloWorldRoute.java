@@ -11,20 +11,27 @@ public class HelloWorldRoute {
 
   private static final AtomicLong COUNT = new AtomicLong(0L);
 
-  public static void attach(Router web, BaseConfiguration result) {
+  public static void attach(final Router web, final BaseConfiguration result) {
     web
       .route("/hello-world")
-      .handler(routingContext -> routingContext
-        .response()
-        .putHeader("Content-Type", "application/json")
-        .end(
-          JsonObject
-            .mapFrom(createResponse(result.getTemplate(), result.getDefaultName()))
-            .encode()
-        ));
+      .handler(routingContext -> {
+        final String name = routingContext
+          .queryParam("name")
+          .stream()
+          .filter(param -> !param.isEmpty())
+          .findFirst()
+          .orElse(result.getDefaultName());
+        routingContext
+          .response()
+          .putHeader("Content-Type", "application/json")
+          .end(
+            JsonObject
+              .mapFrom(createResponse(result.getTemplate(), name))
+              .encode());
+      });
   }
 
-  private static SayingDto createResponse(String template, String defaultName) {
-    return new SayingDto(COUNT.getAndIncrement(), template.formatted(defaultName));
+  private static SayingDto createResponse(String template, String name) {
+    return new SayingDto(COUNT.getAndIncrement(), template.formatted(name));
   }
 }
