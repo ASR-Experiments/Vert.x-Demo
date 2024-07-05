@@ -1,6 +1,7 @@
 package com.asr.example.vert.x.demo;
 
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
+import com.asr.example.vert.x.demo.route.HealthCheckRoute;
 import com.asr.example.vert.x.demo.route.HelloWorldRoute;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -20,15 +21,16 @@ public class AppVerticle extends AbstractVerticle {
   private final Logger LOGGER = LoggerFactory.getLogger(AppVerticle.class.getName());
 
   @Override
-  public void start(Promise<Void> startPromise) {
+  public void start(final Promise<Void> startPromise) {
 
-    Router router = Router.router(vertx);
+    final Router router = Router.router(vertx);
 
     // Configuration setup
     setUpConfig()
       .onComplete(json -> {
           BaseConfiguration result = json.result().mapTo(BaseConfiguration.class);
           HelloWorldRoute.attach(router, result);
+          HealthCheckRoute.attach(vertx, router, result);
           vertx
             .createHttpServer()
             .requestHandler(router)

@@ -63,6 +63,12 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
 
+    <!-- For Health Checks -->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-health-check</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-junit5</artifactId>

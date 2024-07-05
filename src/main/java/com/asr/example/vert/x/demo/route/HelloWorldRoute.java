@@ -14,6 +14,7 @@ public class HelloWorldRoute {
   public static void attach(final Router web, final BaseConfiguration result) {
     web
       .route("/hello-world")
+      .setName("hello-world")
       .handler(routingContext -> {
         final String name = routingContext
           .queryParam("name")
