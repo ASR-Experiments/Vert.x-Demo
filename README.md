@@ -21,10 +21,35 @@ update and delete users.
     mvn exec:java
     ```
 
+## What's covered ?
+
+1. **HealthCheck**: A simple health check to check the health of the application.
+2. **HelloWorldEndpoint**: A simple endpoint that returns a message `Hello! <name>`.
+
+## APIs
+
+1. **HealthCheck**: A simple health check to check the health of the application.
+   - **URL**: `/health`
+   - **Method**: `GET`
+   - **Response**:
+     `{ "status": "UP", "checks": [ { "id": "template-check", "status": "UP", "data": { "template": "Hello, %s!" } } ], "outcome": "UP" }`
+   - **Description**: It returns the health of the application.
+
+2. **HelloWorldEndpoint**: A simple endpoint that returns a message `Hello! <name>`.
+   - **URL**: `/hello`
+   - **Method**: `GET`
+   - **Response**:
+     `{ "id": 1, "content": "Hello, Stranger!" }`
+   - **Query Params**:
+     - `name`: The name of the user.
+       - **Description**: It returns the message `Hello! <name>`.
+       - **Example**: `/hello?name=John`
+       - **Response**: `{ "id": 0, "content": "Hello, John!" }`
 
 ## Sonar
 
 ### Badges
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ASR-Experiments_Vert.x-Demo&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ASR-Experiments_Vert.x-Demo)
 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ASR-Experiments_Vert.x-Demo&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ASR-Experiments_Vert.x-Demo)
