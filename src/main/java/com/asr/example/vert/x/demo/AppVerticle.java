@@ -2,6 +2,7 @@ package com.asr.example.vert.x.demo;
 
 
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
+import com.asr.example.vert.x.demo.config.DatabaseConfiguration;
 import com.asr.example.vert.x.demo.route.HealthCheckRoute;
 import com.asr.example.vert.x.demo.route.HelloWorldRoute;
 import io.smallrye.mutiny.Uni;
@@ -13,6 +14,8 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.config.ConfigRetriever;
 import io.vertx.mutiny.ext.web.Router;
+
+import java.util.concurrent.CompletableFuture;
 
 public class AppVerticle extends AbstractVerticle {
 
@@ -35,19 +38,47 @@ public class AppVerticle extends AbstractVerticle {
           HelloWorldRoute.attach(router, config);
           HealthCheckRoute.attach(router, vertx, config);
 
-          // Start the server
-          LOGGER.debug("Starting the server");
+          Uni<DatabaseConfiguration> databaseSetupFuture = Uni.createFrom().deferred(() -> {
+            LOGGER.debug("Starting Hibernate Reactive");
+            return Uni.createFrom().item(DatabaseConfiguration.create(config));
+          });
+
           return vertx
-            .createHttpServer()
-            .requestHandler(router)
-            .listen(APP_PORT)
+            .executeBlocking(databaseSetupFuture)
             .onItem()
-            .transform(httpServer -> {
-              LOGGER.info("Server started on port: " + httpServer.actualPort());
-              return httpServer;
-            })
-            .onFailure()
-            .invoke(throwable -> LOGGER.error("Error while starting the server", throwable));
+            .transform(
+              databaseConfiguration -> {
+                LOGGER.debug("Database setup completed");
+                databaseConfiguration.getSessionFactory()
+                  .withSession(
+                    session -> {
+                      LOGGER.debug("Session created");
+                      session
+                        .createNativeQuery("SELECT 1")
+                        .executeUpdate()
+                        .exceptionally(throwable -> {
+                          LOGGER.error("Error while testing database connection", throwable);
+                          return -1;
+                        });
+                      return CompletableFuture.completedFuture(null);
+                    }
+                  );
+
+                // Start the server
+                LOGGER.debug("Starting the server");
+                return vertx
+                  .createHttpServer()
+                  .requestHandler(router)
+                  .listen(APP_PORT)
+                  .onItem()
+                  .transform(httpServer -> {
+                    LOGGER.info("Server started on port: " + httpServer.actualPort());
+                    return httpServer;
+                  })
+                  .onFailure()
+                  .invoke(throwable -> LOGGER.error("Error while starting the server", throwable));
+              }
+            );
         }
       )
       .replaceWithVoid();
@@ -56,11 +87,24 @@ public class AppVerticle extends AbstractVerticle {
 
   private Uni<JsonObject> setUpConfig() {
     LOGGER.debug("Setting up configuration");
+    ConfigStoreOptions localYamlStore = new ConfigStoreOptions()
+      .setFormat("yaml")
+      .setType("file")
+      .setOptional(true)
+      .setConfig(new JsonObject().put("path", "application-local.yaml"));
+    ConfigStoreOptions defaultYamlStore = new ConfigStoreOptions()
+      .setFormat("yaml")
+      .setType("file")
+      .setOptional(true)
+      .setConfig(new JsonObject().put("path", "application.yaml"));
     ConfigStoreOptions configStoreOptions = new ConfigStoreOptions()
       .setFormat("properties")
       .setType("file")
       .setConfig(new JsonObject().put("path", "application.properties").put("raw-data", true));
-    ConfigRetrieverOptions options = new ConfigRetrieverOptions().addStore(configStoreOptions);
+    ConfigRetrieverOptions options = new ConfigRetrieverOptions()
+      .addStore(localYamlStore)
+      .addStore(defaultYamlStore)
+      .addStore(configStoreOptions);
     return ConfigRetriever
       .create(vertx, options)
       .getConfig()
