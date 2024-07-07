@@ -1,13 +1,13 @@
 package com.asr.example.vert.x.demo.handler.health;
 
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.smallrye.mutiny.operators.AbstractUni;
+import io.smallrye.mutiny.subscription.UniSubscriber;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.healthchecks.Status;
 
 import java.util.Map;
 
-public class CustomHealthCheckHandler implements Handler<Promise<Status>> {
+public class CustomHealthCheckHandler extends AbstractUni<Status> {
 
   private final String template;
 
@@ -16,11 +16,11 @@ public class CustomHealthCheckHandler implements Handler<Promise<Status>> {
   }
 
   @Override
-  public void handle(Promise<Status> future) {
+  public void subscribe(UniSubscriber<? super Status> subscriber) {
     if (template.isEmpty()) {
-      future.complete(Status.KO().setData(new JsonObject(Map.of("template", "No template found"))));
+      subscriber.onItem(Status.KO().setData(new JsonObject(Map.of("template", "No template found"))));
     } else {
-      future.complete(Status.OK().setData(new JsonObject(Map.of("template", template))));
+      subscriber.onItem(Status.OK().setData(new JsonObject(Map.of("template", template))));
     }
   }
 }
