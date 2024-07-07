@@ -185,3 +185,8 @@ nbdist/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+## Local properties
+application-local.yaml
+application-local.yml
+application-local.properties
