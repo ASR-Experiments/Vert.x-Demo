@@ -3,8 +3,11 @@ package com.asr.example.vert.x.demo;
 
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
 import com.asr.example.vert.x.demo.config.DatabaseConfiguration;
+import com.asr.example.vert.x.demo.repository.UserRepository;
 import com.asr.example.vert.x.demo.route.HealthCheckRoute;
 import com.asr.example.vert.x.demo.route.HelloWorldRoute;
+import com.asr.example.vert.x.demo.route.UserRoute;
+import com.asr.example.vert.x.demo.service.UserService;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -43,10 +46,18 @@ public class AppVerticle extends AbstractVerticle {
               databaseConfiguration -> {
                 LOGGER.debug("Database setup completed");
 
+                // Initializing services
+                // Repos
+                final UserRepository userRepository = new UserRepository(databaseConfiguration.getSessionFactory());
+
+                // Services
+                final UserService userService = new UserService(userRepository);
+
                 // Attaching routes
                 LOGGER.debug("Attaching routes");
                 HelloWorldRoute.attach(router, config);
                 HealthCheckRoute.attach(router, vertx, config, databaseConfiguration);
+                new UserRoute(userService).attach(router);
 
                 // Start the server
                 LOGGER.debug("Starting the server");
