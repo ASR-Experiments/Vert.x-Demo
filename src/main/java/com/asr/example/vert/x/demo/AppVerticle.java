@@ -15,8 +15,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.config.ConfigRetriever;
 import io.vertx.mutiny.ext.web.Router;
 
-import java.util.concurrent.CompletableFuture;
-
 public class AppVerticle extends AbstractVerticle {
 
   private static final int APP_PORT = 8080;
@@ -33,11 +31,6 @@ public class AppVerticle extends AbstractVerticle {
         {
           BaseConfiguration config = jsonConfig.mapTo(BaseConfiguration.class);
 
-          // Attaching routes
-          LOGGER.debug("Attaching routes");
-          HelloWorldRoute.attach(router, config);
-          HealthCheckRoute.attach(router, vertx, config);
-
           Uni<DatabaseConfiguration> databaseSetupFuture = Uni.createFrom().deferred(() -> {
             LOGGER.debug("Starting Hibernate Reactive");
             return Uni.createFrom().item(DatabaseConfiguration.create(config));
@@ -46,23 +39,14 @@ public class AppVerticle extends AbstractVerticle {
           return vertx
             .executeBlocking(databaseSetupFuture)
             .onItem()
-            .transform(
+            .transformToUni(
               databaseConfiguration -> {
                 LOGGER.debug("Database setup completed");
-                databaseConfiguration.getSessionFactory()
-                  .withSession(
-                    session -> {
-                      LOGGER.debug("Session created");
-                      session
-                        .createNativeQuery("SELECT 1")
-                        .executeUpdate()
-                        .exceptionally(throwable -> {
-                          LOGGER.error("Error while testing database connection", throwable);
-                          return -1;
-                        });
-                      return CompletableFuture.completedFuture(null);
-                    }
-                  );
+
+                // Attaching routes
+                LOGGER.debug("Attaching routes");
+                HelloWorldRoute.attach(router, config);
+                HealthCheckRoute.attach(router, vertx, config, databaseConfiguration);
 
                 // Start the server
                 LOGGER.debug("Starting the server");
