@@ -10,56 +10,49 @@ import io.vertx.mutiny.ext.web.RoutingContext;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class FindUserHandler implements Consumer<RoutingContext> {
+public record DeleteUserHandler(UserService userService) implements Consumer<RoutingContext> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FindUserHandler.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(DeleteUserHandler.class);
 
-  private final UserService userService;
-
-  public FindUserHandler(UserService userService) {
-    this.userService = userService;
-  }
-
-  /**
-   * Performs this operation on the given argument.
-   *
-   * @param routingContext the input argument
-   */
   @Override
   public void accept(RoutingContext routingContext) {
+    LOGGER.info("DeleteUserHandler called");
     String idStr = routingContext.pathParam("id");
     if (idStr == null || idStr.trim().isEmpty()) {
+      LOGGER.warn("Id is empty or missing from request");
       ResponseUtil.addError(
         "Id is empty or missing from request",
-        routingContext.response().setStatusCode(400)
+        routingContext.response()
+          .setStatusCode(400)
       );
       return;
     }
-    Long id = Long.parseLong(idStr.trim());
-    userService.findById(id)
+    long id = Long.parseLong(idStr.trim());
+    LOGGER.info("Deleting user with id: " + id);
+    userService.delete(id)
       .subscribe()
       .with(
         user -> {
           if (user == null) {
-            LOGGER.warn("User not found for id: " + id);
+            LOGGER.warn("User Not found for Id: " + id);
             ResponseUtil.addError(
-              "User Not found for Id" + id,
+              "User Not found for Id: " + id,
               routingContext.response()
                 .setStatusCode(404)
             );
           } else {
-            LOGGER.info("User found for id: " + id);
+            LOGGER.info("User deleted successfully");
             routingContext.response()
-              .putHeader("Content-Type", "application/json")
+              .setStatusCode(200)
+              .putHeader("content-type", "application/json")
               .endAndForget(JsonObject.mapFrom(user).encode());
           }
         },
-        throwable ->
-          ResponseUtil.addError(
-            "Something went wrong",
-            routingContext.response().setStatusCode(500),
-            Map.of("cause", throwable.getMessage())
-          )
+        throwable -> ResponseUtil.addError(
+          "Something went wrong",
+          routingContext.response()
+            .setStatusCode(500),
+          Map.of("cause", throwable.getMessage()))
       );
   }
 }
