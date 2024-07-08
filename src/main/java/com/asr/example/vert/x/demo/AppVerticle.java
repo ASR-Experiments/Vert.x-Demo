@@ -8,6 +8,7 @@ import com.asr.example.vert.x.demo.route.HealthCheckRoute;
 import com.asr.example.vert.x.demo.route.HelloWorldRoute;
 import com.asr.example.vert.x.demo.route.UserRoute;
 import com.asr.example.vert.x.demo.service.UserService;
+import com.asr.example.vert.x.demo.util.ResponseUtil;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -54,10 +55,26 @@ public class AppVerticle extends AbstractVerticle {
                 final UserService userService = new UserService(userRepository);
 
                 // Attaching routes
+                final Router apiRoute = Router.router(vertx);
+                router.route("/api/*")
+                  .failureHandler(routingContext -> {
+                    if (routingContext.response().ended()) {
+                      return;
+                    }
+                    LOGGER.error("Error while processing request", routingContext.failure());
+                    ResponseUtil.addError(
+                      "Internal Server Error",
+                      routingContext.response().setStatusCode(500),
+                      ResponseUtil.formError(routingContext.failure())
+                    );
+                  })
+                  .subRouter(apiRoute);
+
                 LOGGER.debug("Attaching routes");
-                HelloWorldRoute.attach(router, config);
                 HealthCheckRoute.attach(router, vertx, config, databaseConfiguration);
-                new UserRoute(userService).attach(router);
+
+                HelloWorldRoute.attach(apiRoute, config);
+                new UserRoute(userService).attach(apiRoute);
 
                 // Start the server
                 LOGGER.debug("Starting the server");

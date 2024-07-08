@@ -1,4 +1,4 @@
-package com.asr.example.vert.x.demo.handler;
+package com.asr.example.vert.x.demo.handler.user;
 
 import com.asr.example.vert.x.demo.domain.UserEntity;
 import com.asr.example.vert.x.demo.service.UserService;
@@ -16,26 +16,31 @@ public record UpdateUserHandler(UserService userService) implements Consumer<Rou
 
   @Override
   public void accept(final RoutingContext context) {
-    String idStr = context.pathParam("id");
-    if (idStr == null || idStr.trim().isEmpty()) {
+    long id;
+    try {
+      id = ResponseUtil.parseLong(context.pathParam("id"));
+    } catch (IllegalArgumentException e) {
+      LOGGER.warn("Invalid Id " + e.getMessage());
       ResponseUtil.addError(
-        "Id is empty or missing from request",
-        context.response().setStatusCode(400)
+        "Invalid Id " + e.getMessage(),
+        context.response()
+          .setStatusCode(400),
+        ResponseUtil.formError(e)
       );
       return;
     }
-    long id = Long.parseLong(idStr.trim());
-    LOGGER.info("Updating user with id: " + id);
+    LOGGER.debug("Updating user with id: " + id);
     userService.update(id, context.body().asPojo(UserEntity.class))
       .subscribe()
       .with(entity -> {
         if (entity == null) {
+          LOGGER.warn("User not found for id: " + id);
           ResponseUtil.addError(
             "User not found for id: " + id,
             context.response().setStatusCode(404)
           );
         } else {
-          LOGGER.info("User deleted successfully");
+          LOGGER.debug("User deleted successfully");
           context.response()
             .setStatusCode(200)
             .putHeader("content-type", "application/json")

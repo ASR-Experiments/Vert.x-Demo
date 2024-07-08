@@ -3,7 +3,10 @@ package com.asr.example.vert.x.demo.util;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.http.HttpServerResponse;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public record ResponseUtil() {
 
@@ -20,4 +23,31 @@ public record ResponseUtil() {
       .endAndForget(JsonObject.mapFrom(body).encode());
   }
 
+  public static Map<String, Object> formError(Throwable throwable) {
+    return Optional.ofNullable(throwable)
+      .map(error -> Map.of(
+        "error", getErrorString(error),
+        "localisedError", Optional.of(error).map(Throwable::getLocalizedMessage).orElse(""),
+        "cause", Optional.of(error).map(Throwable::getCause).map(ResponseUtil::getErrorString).orElse(""),
+        "first", Arrays.stream(error.getStackTrace())
+          .limit(5)
+          .map(StackTraceElement::toString)
+          .toList()))
+      .orElse(new HashMap<>());
+  }
+
+  private static String getErrorString(Throwable error) {
+    return Optional.of(error).map(err -> err.getClass() + " :: " + err.getMessage()).orElse("");
+  }
+
+  public static Long parseLong(String str) {
+    try {
+      if (str == null || str.trim().isEmpty()) {
+        throw new IllegalArgumentException("Parameter is empty");
+      }
+      return Long.parseLong(str.trim());
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Parameter (" + str + ") is in invalid Number format", e);
+    }
+  }
 }

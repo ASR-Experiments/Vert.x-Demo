@@ -1,4 +1,4 @@
-package com.asr.example.vert.x.demo.handler;
+package com.asr.example.vert.x.demo.handler.user;
 
 import com.asr.example.vert.x.demo.service.UserService;
 import com.asr.example.vert.x.demo.util.ResponseUtil;
@@ -7,7 +7,6 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.ext.web.RoutingContext;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 public record DeleteUserHandler(UserService userService) implements Consumer<RoutingContext> {
@@ -16,19 +15,21 @@ public record DeleteUserHandler(UserService userService) implements Consumer<Rou
 
   @Override
   public void accept(RoutingContext routingContext) {
-    LOGGER.info("DeleteUserHandler called");
-    String idStr = routingContext.pathParam("id");
-    if (idStr == null || idStr.trim().isEmpty()) {
-      LOGGER.warn("Id is empty or missing from request");
+    LOGGER.debug("DeleteUserHandler called");
+    long id;
+    try {
+      id = ResponseUtil.parseLong(routingContext.pathParam("id"));
+    } catch (IllegalArgumentException e) {
+      LOGGER.warn("Invalid Id " + e.getMessage());
       ResponseUtil.addError(
-        "Id is empty or missing from request",
+        "Invalid Id " + e.getMessage(),
         routingContext.response()
-          .setStatusCode(400)
+          .setStatusCode(400),
+        ResponseUtil.formError(e)
       );
       return;
     }
-    long id = Long.parseLong(idStr.trim());
-    LOGGER.info("Deleting user with id: " + id);
+    LOGGER.debug("Deleting user with id: " + id);
     userService.delete(id)
       .subscribe()
       .with(
@@ -41,18 +42,13 @@ public record DeleteUserHandler(UserService userService) implements Consumer<Rou
                 .setStatusCode(404)
             );
           } else {
-            LOGGER.info("User deleted successfully");
+            LOGGER.debug("User deleted successfully");
             routingContext.response()
               .setStatusCode(200)
               .putHeader("content-type", "application/json")
               .endAndForget(JsonObject.mapFrom(user).encode());
           }
-        },
-        throwable -> ResponseUtil.addError(
-          "Something went wrong",
-          routingContext.response()
-            .setStatusCode(500),
-          Map.of("cause", throwable.getMessage()))
+        }
       );
   }
 }

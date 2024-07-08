@@ -47,7 +47,7 @@ public class UserService {
                 LOGGER.error("Error while updating user", throwable);
                 uniEmitter.fail(throwable);
               } else {
-                LOGGER.info("User updated successfully");
+                LOGGER.debug("User updated successfully");
                 uniEmitter.complete(updatedUser);
               }
               return updatedUser;
@@ -67,16 +67,16 @@ public class UserService {
           uniEmitter.complete(null);
         } else {
           userRepository.delete(userEntity)
-            .handle((integer, throwable) -> {
+            .handle((status, throwable) -> {
               if (throwable != null) {
                 LOGGER.error("Error while deleting user", throwable);
                 uniEmitter.fail(throwable);
               } else {
-                if (integer > 0) {
-                  LOGGER.info("User deleted successfully with status : " + integer);
+                if (status > 0) {
+                  LOGGER.debug("User deleted successfully with status : " + status);
                   uniEmitter.complete(userEntity);
                 } else {
-                  LOGGER.warn("User not found for id: " + id);
+                  LOGGER.warn("Invalid status " + status + " while deleting user");
                   uniEmitter.complete(null);
                 }
               }

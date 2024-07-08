@@ -1,13 +1,11 @@
-package com.asr.example.vert.x.demo.handler;
+package com.asr.example.vert.x.demo.handler.user;
 
 import com.asr.example.vert.x.demo.domain.UserEntity;
 import com.asr.example.vert.x.demo.service.UserService;
-import com.asr.example.vert.x.demo.util.ResponseUtil;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.ext.web.RequestBody;
 import io.vertx.mutiny.ext.web.RoutingContext;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 public record CreateUserHandler(UserService userService) implements Consumer<RoutingContext> {
@@ -23,13 +21,7 @@ public record CreateUserHandler(UserService userService) implements Consumer<Rou
         user -> routingContext.response()
           .setStatusCode(201)
           .putHeader("Content-Type", "application/json")
-          .endAndForget(JsonObject.mapFrom(user).encode()),
-        throwable ->
-          ResponseUtil.addError(
-            "Something went wrong",
-            routingContext.response().setStatusCode(500),
-            Map.of("cause", throwable.getMessage())
-          )
+          .endAndForget(JsonObject.mapFrom(user).encode())
       );
   }
 }
