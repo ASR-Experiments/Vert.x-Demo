@@ -6,18 +6,17 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.healthchecks.Status;
-import org.hibernate.reactive.stage.Stage;
+import org.hibernate.reactive.mutiny.Mutiny;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class CustomDBHealthCheckHandler extends AbstractUni<Status> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomDBHealthCheckHandler.class.getName());
 
-  private final Stage.SessionFactory sessionFactory;
+  private final Mutiny.SessionFactory sessionFactory;
 
-  public CustomDBHealthCheckHandler(Stage.SessionFactory sessionFactory) {
+  public CustomDBHealthCheckHandler(Mutiny.SessionFactory sessionFactory) {
     this.sessionFactory = sessionFactory;
   }
 
@@ -27,10 +26,11 @@ public class CustomDBHealthCheckHandler extends AbstractUni<Status> {
       .withSession(
         session -> {
           LOGGER.debug("Session created");
-          session
+          return session
             .createNativeQuery("SELECT 1")
             .executeUpdate()
-            .handle(
+            .onItemOrFailure()
+            .invoke(
               (integer, throwable) -> {
                 if (throwable != null) {
                   LOGGER.error("Error while testing database connection", throwable);
@@ -45,9 +45,7 @@ public class CustomDBHealthCheckHandler extends AbstractUni<Status> {
                   LOGGER.info("Database connection test successful");
                   subscriber.onItem(Status.OK());
                 }
-                return null;
               });
-          return CompletableFuture.completedFuture(null);
         }
       );
   }

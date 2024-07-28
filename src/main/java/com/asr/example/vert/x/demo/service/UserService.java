@@ -17,71 +17,54 @@ public class UserService {
   }
 
   public Uni<UserEntity> findById(final Long id) {
-    return Uni
-      .createFrom()
-      .completionStage(() -> userRepository.findById(id));
+    return userRepository.findById(id);
   }
 
   public Uni<UserEntity> save(UserEntity user) {
-    return Uni
-      .createFrom()
-      .completionStage(() -> userRepository.save(user))
+    return userRepository.save(user)
       .onItem()
       .transform(unused -> user);
   }
 
-  public Uni<UserEntity> update(final long id, final UserEntity updatedUser) {
-    return Uni
-      .createFrom()
-      .completionStage(() -> userRepository.findById(id))
+  public Uni<UserEntity> update(final long id, final UserEntity requestedUser) {
+    return userRepository.findById(id)
       .onItem()
-      .transformToUni((entity, uniEmitter) -> {
-        if (entity == null) {
+      .transformToUni((foundEntity, uniEmitter) -> {
+        if (foundEntity == null) {
           throw new IllegalArgumentException("User not found");
         }
-        updatedUser.setId(id);
-        userRepository.update(updatedUser)
-          .handle(
-            (unused, throwable) -> {
-              if (throwable != null) {
-                LOGGER.error("Error while updating user", throwable);
-                uniEmitter.fail(throwable);
-              } else {
-                LOGGER.debug("User updated successfully");
-                uniEmitter.complete(updatedUser);
-              }
-              return updatedUser;
+        requestedUser.setId(id);
+        userRepository.update(requestedUser)
+          .subscribe()
+          .with(
+            updateEntity -> {
+              LOGGER.debug("User updated successfully with id: " + id);
+              uniEmitter.complete(requestedUser);
             }
           );
       });
   }
 
   public Uni<UserEntity> delete(final long id) {
-    return Uni
-      .createFrom()
-      .completionStage(() -> userRepository.findById(id))
+    return userRepository.findById(id)
       .onItem()
-      .transformToUni((userEntity, uniEmitter) -> {
-        if (userEntity == null) {
+      .transformToUni((foundEntity, uniEmitter) -> {
+        if (foundEntity == null) {
           LOGGER.warn("User not found for id: " + id);
           uniEmitter.complete(null);
         } else {
-          userRepository.delete(userEntity)
-            .handle((status, throwable) -> {
-              if (throwable != null) {
-                LOGGER.error("Error while deleting user", throwable);
-                uniEmitter.fail(throwable);
-              } else {
+          userRepository.delete(foundEntity)
+            .subscribe()
+            .with(status -> {
                 if (status > 0) {
                   LOGGER.debug("User deleted successfully with status : " + status);
-                  uniEmitter.complete(userEntity);
+                  uniEmitter.complete(foundEntity);
                 } else {
-                  LOGGER.warn("Invalid status " + status + " while deleting user");
+                  LOGGER.warn("Invalid status " + status + " while deleting user with id: " + id);
                   uniEmitter.complete(null);
                 }
               }
-              return userEntity;
-            });
+            );
         }
       });
   }

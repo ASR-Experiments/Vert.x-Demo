@@ -49,7 +49,8 @@ public class AppVerticle extends AbstractVerticle {
 
                 // Initializing services
                 // Repos
-                final UserRepository userRepository = new UserRepository(databaseConfiguration.getSessionFactory());
+                final UserRepository userRepository = new UserRepository(
+                  databaseConfiguration.getSessionFactory());
 
                 // Services
                 final UserService userService = new UserService(userRepository);

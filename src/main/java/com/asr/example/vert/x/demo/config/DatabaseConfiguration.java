@@ -2,17 +2,17 @@ package com.asr.example.vert.x.demo.config;
 
 import com.asr.example.vert.x.demo.domain.UserEntity;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.reactive.mutiny.Mutiny;
 import org.hibernate.reactive.provider.ReactiveServiceRegistryBuilder;
-import org.hibernate.reactive.stage.Stage;
 import org.hibernate.service.ServiceRegistry;
 
 import java.util.Properties;
 
 public class DatabaseConfiguration {
 
-  private final Stage.SessionFactory sessionFactory;
+  private final Mutiny.SessionFactory sessionFactory;
 
-  private DatabaseConfiguration(Stage.SessionFactory sessionFactory) {
+  private DatabaseConfiguration(Mutiny.SessionFactory sessionFactory) {
     this.sessionFactory = sessionFactory;
   }
 
@@ -40,20 +40,20 @@ public class DatabaseConfiguration {
       .build();
   }
 
-  static Stage.SessionFactory getSessionFactory(Configuration dbConfig, ServiceRegistry serviceRegistry) {
+  static Mutiny.SessionFactory getSessionFactory(Configuration dbConfig, ServiceRegistry serviceRegistry) {
     return dbConfig
       .buildSessionFactory(serviceRegistry)
-      .unwrap(Stage.SessionFactory.class);
+      .unwrap(Mutiny.SessionFactory.class);
   }
 
-  public static Stage.SessionFactory getSessionFactory(BaseConfiguration appConfig) {
+  public static Mutiny.SessionFactory getSessionFactory(BaseConfiguration appConfig) {
     Configuration dbConfig = getConfiguration(appConfig);
     dbConfig = addEntities(dbConfig);
     ServiceRegistry serviceRegistry = getServiceRegistry(dbConfig);
     return getSessionFactory(dbConfig, serviceRegistry);
   }
 
-  public Stage.SessionFactory getSessionFactory() {
+  public Mutiny.SessionFactory getSessionFactory() {
     return sessionFactory;
   }
 }

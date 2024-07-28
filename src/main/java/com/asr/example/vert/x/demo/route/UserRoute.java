@@ -14,7 +14,6 @@ public record UserRoute(UserService userService) {
 
   public void attach(io.vertx.mutiny.ext.web.Router router) {
 
-
     router
       .get(BASE_PATH + "/:id")
       .setName("find-user")
