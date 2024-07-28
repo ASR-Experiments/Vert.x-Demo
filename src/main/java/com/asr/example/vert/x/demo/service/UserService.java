@@ -6,6 +6,8 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 
+import java.util.List;
+
 public class UserService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
@@ -67,5 +69,9 @@ public class UserService {
             );
         }
       });
+  }
+
+  public Uni<List<UserEntity>> findAll(final Integer offset, final Integer limit) {
+    return userRepository.findAll(offset, limit);
   }
 }

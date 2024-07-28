@@ -8,6 +8,8 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.hibernate.reactive.mutiny.Mutiny;
 
+import java.util.List;
+
 public class UserRepository {
   private final Mutiny.SessionFactory sessionFactory;
 
@@ -42,6 +44,17 @@ public class UserRepository {
   public Uni<UserEntity> update(UserEntity user) {
     return sessionFactory.withTransaction(
       (session, tx) -> session.merge(user)
+    );
+  }
+
+  public Uni<List<UserEntity>> findAll(final int offset, final int limit) {
+    return sessionFactory.withTransaction(
+      (session, tx) -> {
+        Mutiny.SelectionQuery<UserEntity> query = session.createQuery("SELECT u FROM UserEntity u", UserEntity.class);
+        query.setFirstResult(Math.max(offset, 0));
+        query.setMaxResults(limit < 1 ? 10 : limit);
+        return query.getResultList();
+      }
     );
   }
 }
