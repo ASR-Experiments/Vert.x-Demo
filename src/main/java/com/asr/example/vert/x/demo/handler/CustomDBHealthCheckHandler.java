@@ -8,8 +8,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.healthchecks.Status;
 import org.hibernate.reactive.mutiny.Mutiny;
 
-import java.util.Map;
-
 public class CustomDBHealthCheckHandler extends AbstractUni<Status> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomDBHealthCheckHandler.class.getName());
@@ -29,24 +27,19 @@ public class CustomDBHealthCheckHandler extends AbstractUni<Status> {
           return session
             .createNativeQuery("SELECT 1")
             .executeUpdate()
-            .onItemOrFailure()
-            .invoke(
-              (integer, throwable) -> {
-                if (throwable != null) {
-                  LOGGER.error("Error while testing database connection", throwable);
-                  subscriber.onItem(
-                    Status.KO()
-                      .setData(JsonObject.mapFrom(Map.of(
-                        "message", "Error while testing database connection",
-                        "error", throwable.getMessage()
-                      )))
-                  );
-                } else {
-                  LOGGER.info("Database connection test successful");
-                  subscriber.onItem(Status.OK());
-                }
-              });
-        }
-      );
+            .call(integer -> {
+              LOGGER.debug("Query executed");
+              if (integer == 1) {
+                subscriber.onItem(Status.OK());
+              } else {
+                subscriber.onItem(Status.KO().setData(JsonObject.of("error", "DB health check failed", "status", integer)));
+              }
+              return null;
+            });
+        })
+      .subscribe()
+      .with(
+        integer -> Status.OK(JsonObject.of("status", integer)),
+        subscriber::onFailure);
   }
 }
