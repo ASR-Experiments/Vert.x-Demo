@@ -45,6 +45,75 @@ update and delete users.
        - **Description**: It returns the message `Hello! <name>`.
        - **Example**: `/hello?name=John`
        - **Response**: `{ "id": 0, "content": "Hello, John!" }`
+3. It also covers the Database interactions with a postgres database, check [Pre-requisites](###Database-setup).
+  * To access the endpoint, hit the following URL in the **cURL** or other clients:
+      ```shell
+         curl --location 'localhost:8080/api/user'
+      ```
+    > It will return a response similar to following.
+     ```json
+       [{"id":1,"name":"username","email":"username@test.com","password":"password","role":"ADMIN"}]
+     ```
+  * To create a user, hit the following URL in **cURL** or other clients:
+     ```shell
+        curl --location 'localhost:8080/api/user' \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+              "name": "user",
+              "email": "user@test.com",
+              "password": "password",
+              "role": "USER"
+              }'
+      ```
+    > It will return the created user in the response.
+      ```json
+        {"id":2,"name":"user","email":"user@test.com","password":"password","role":"USER"}
+      ```
+    * Calling the first api again, will respond with the newly created user.
+    * Rest of the CRUD operations can be performed in a similar way by changing the method and payload.
+      * For more information, check the code in `UserRoute` class.
+      * OR, check `/docs` folder.
+
+## Pre-Requisite
+
+### Database setup
+
+1. **Pre-requisite**: Postgres should be installed and running on the local machine.
+   1. Create a database.
+   2. Create a sequence for Id Generation.
+       ```sql
+       CREATE SEQUENCE IF NOT EXISTS user_schema.id_sequence
+       INCREMENT 1
+       START 1
+       MINVALUE 1
+       MAXVALUE 9223372036854775807
+       CACHE 1;
+       ```
+   3. Finally, Create the following table:
+       ```sql
+       CREATE TABLE IF NOT EXISTS tbl_user
+       (
+       name character varying(128) NOT NULL,
+       email character varying(128),
+       password text NOT NULL,
+       id bigint NOT NULL DEFAULT nextval('user_schema.id_sequence'::regclass),
+       CONSTRAINT tbl_user_pkey PRIMARY KEY (id),
+       CONSTRAINT "user" UNIQUE NULLS NOT DISTINCT (name)
+       );
+       ```
+   4. Update `config.yml` by replacing the placeholders for database details,
+      like `<DB_USER>`, `<DB_PASSWORD>`, `<DB_NAME>`,
+      `<DB_HOST>`, `<DB_PORT>`.
+   5. Add another column for Authorization (added in Iteration 5 (0.0.5))
+      ```sql
+      ALTER TABLE IF EXISTS user_schema.tbl_user
+         ADD COLUMN role character varying(16) DEFAULT USER;
+      ```
+   6. Add a sample user for testing.
+      ```sql
+        INSERT INTO tbl_user (name, email, password, role)
+           VALUES ('username', 'username@test.com', 'password', 'ADMIN');
+      ```
 
 ## Sonar
 
