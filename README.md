@@ -46,15 +46,15 @@ update and delete users.
        - **Example**: `/hello?name=John`
        - **Response**: `{ "id": 0, "content": "Hello, John!" }`
 3. It also covers the Database interactions with a postgres database, check [Pre-requisites](###Database-setup).
-  * To access the endpoint, hit the following URL in the **cURL** or other clients:
+   - To access the endpoint, hit the following URL in the **cURL** or other clients:
       ```shell
          curl --location 'localhost:8080/api/user'
       ```
-    > It will return a response similar to following.
+     > It will return a response similar to following.
      ```json
        [{"id":1,"name":"username","email":"username@test.com","password":"password","role":"ADMIN"}]
      ```
-  * To create a user, hit the following URL in **cURL** or other clients:
+   - To create a user, hit the following URL in **cURL** or other clients:
      ```shell
         curl --location 'localhost:8080/api/user' \
               --header 'Content-Type: application/json' \
@@ -65,14 +65,46 @@ update and delete users.
               "role": "USER"
               }'
       ```
-    > It will return the created user in the response.
-      ```json
-        {"id":2,"name":"user","email":"user@test.com","password":"password","role":"USER"}
-      ```
-    * Calling the first api again, will respond with the newly created user.
-    * Rest of the CRUD operations can be performed in a similar way by changing the method and payload.
+     > It will return the created user in the response.
+       ```json
+         {"id":2,"name":"user","email":"user@test.com","password":"password","role":"USER"}
+       ```
+    - Calling the first api again, will respond with the newly created user.
+    - Rest of the CRUD operations can be performed in a similar way by changing the method and payload.
       * For more information, check the code in `UserRoute` class.
       * OR, check `/docs` folder.
+
+4. Additionally, it also covers downstream calls using `EmployeeRoute`. To test try the following api:
+   ```shell
+    curl --location 'http://localhost:8080/api/employee'
+    ```
+   - It should return response similar to following:
+     ```json
+     [
+      {
+        "id": 1,
+        "name": "Leanne Graham",
+        "username": "Bret",
+        "email": "Sincere@april.biz",
+        "address": {
+            "street": "Kulas Light",
+            "suite": "Apt. 556",
+            "city": "Gwenborough",
+            "zipcode": "92998-3874",
+            "geo": {
+                "lat": "-37.3159",
+                "lng": "81.1496"
+            }
+        },
+        "phone": "1-770-736-8031 x56442",
+        "website": "hildegard.org",
+        "company": {
+            "name": "Romaguera-Crona",
+            "catchPhrase": "Multi-layered client-server neural-net",
+            "bs": "harness real-time e-markets"
+        }
+      } ...
+     ```
 
 ## Pre-Requisite
 
