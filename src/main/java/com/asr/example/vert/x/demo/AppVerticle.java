@@ -4,6 +4,7 @@ package com.asr.example.vert.x.demo;
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
 import com.asr.example.vert.x.demo.config.DatabaseConfiguration;
 import com.asr.example.vert.x.demo.repository.UserRepository;
+import com.asr.example.vert.x.demo.route.EmployeeRoute;
 import com.asr.example.vert.x.demo.route.HealthCheckRoute;
 import com.asr.example.vert.x.demo.route.HelloWorldRoute;
 import com.asr.example.vert.x.demo.route.UserRoute;
@@ -18,6 +19,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.config.ConfigRetriever;
 import io.vertx.mutiny.ext.web.Router;
+import io.vertx.mutiny.ext.web.client.WebClient;
 
 public class AppVerticle extends AbstractVerticle {
 
@@ -48,6 +50,9 @@ public class AppVerticle extends AbstractVerticle {
                 LOGGER.debug("Database setup completed");
 
                 // Initializing services
+                // Web client
+                final WebClient webClient = WebClient.create(vertx);
+
                 // Repos
                 final UserRepository userRepository = new UserRepository(
                   databaseConfiguration.getSessionFactory());
@@ -75,6 +80,7 @@ public class AppVerticle extends AbstractVerticle {
                 HealthCheckRoute.attach(router, vertx, config, databaseConfiguration);
 
                 HelloWorldRoute.attach(apiRoute, config);
+                EmployeeRoute.attach(apiRoute, webClient);
                 new UserRoute(userService).attach(apiRoute);
 
                 // Start the server
