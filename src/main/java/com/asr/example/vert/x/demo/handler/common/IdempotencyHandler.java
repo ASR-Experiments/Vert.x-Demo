@@ -1,5 +1,6 @@
 package com.asr.example.vert.x.demo.handler.common;
 
+import com.asr.example.vert.x.demo.util.IdempotencyCache;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.json.JsonObject;
@@ -9,7 +10,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 
-public record IdempotencyHandler() implements Consumer<RoutingContext> {
+public record IdempotencyHandler(IdempotencyCache idempotencyCache) implements Consumer<RoutingContext> {
 
   @Override
   public void accept(RoutingContext routingContext) {
@@ -38,6 +39,13 @@ public record IdempotencyHandler() implements Consumer<RoutingContext> {
   }
 
   private Optional<JsonObject> crossCheckToken(String idempotencyToken) {
+    if (idempotencyCache.contains(idempotencyToken)) {
+      return Optional.of(JsonObject.of(
+        "type", "error",
+        "message", "Request with the same Idempotency token has already been processed"
+      ));
+    }
+    idempotencyCache.put(idempotencyToken);
     return Optional.empty();
   }
 

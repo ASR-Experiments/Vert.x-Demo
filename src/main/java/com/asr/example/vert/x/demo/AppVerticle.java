@@ -11,6 +11,7 @@ import com.asr.example.vert.x.demo.route.HealthCheckRoute;
 import com.asr.example.vert.x.demo.route.HelloWorldRoute;
 import com.asr.example.vert.x.demo.route.UserRoute;
 import com.asr.example.vert.x.demo.service.UserService;
+import com.asr.example.vert.x.demo.util.IdempotencyCache;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -52,7 +53,8 @@ public class AppVerticle extends AbstractVerticle {
 
                 // Initializing services
                 // Handlers
-                final IdempotencyHandler idempotencyHandler = new IdempotencyHandler();
+                final IdempotencyCache idempotencyCache = new IdempotencyCache(60);
+                final IdempotencyHandler idempotencyHandler = new IdempotencyHandler(idempotencyCache);
                 final FailureHandler failureHandler = new FailureHandler();
 
                 // Web client
