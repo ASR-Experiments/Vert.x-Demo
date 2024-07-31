@@ -1,5 +1,7 @@
 package com.asr.example.vert.x.demo.handler.employee;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.ext.web.RoutingContext;
 import io.vertx.mutiny.ext.web.client.WebClient;
@@ -22,12 +24,12 @@ public record GetEmployeeHandler(WebClient webClient) implements Consumer<Routin
       .with(
         bufferHttpResponse -> routingContext.response()
           .setStatusCode(200)
-          .putHeader("Content-Type", "application/json")
+          .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
           .endAndForget(bufferHttpResponse.bodyAsBuffer()),
         throwable -> routingContext
           .response()
           .setStatusCode(500)
-          .putHeader("Content-Type", "application/json")
+          .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
           .endAndForget(JsonObject.of("error", throwable.getMessage(), "type", throwable.getClass()).encode())
       );
   }

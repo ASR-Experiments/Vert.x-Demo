@@ -2,6 +2,8 @@ package com.asr.example.vert.x.demo.handler.user;
 
 import com.asr.example.vert.x.demo.domain.UserEntity;
 import com.asr.example.vert.x.demo.service.UserService;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.ext.web.RequestBody;
 import io.vertx.mutiny.ext.web.RoutingContext;
@@ -20,7 +22,7 @@ public record CreateUserHandler(UserService userService) implements Consumer<Rou
       .with(
         user -> routingContext.response()
           .setStatusCode(201)
-          .putHeader("Content-Type", "application/json")
+          .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
           .endAndForget(JsonObject.mapFrom(user).encode())
       );
   }

@@ -2,6 +2,8 @@ package com.asr.example.vert.x.demo.handler.hello.world;
 
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
 import com.asr.example.vert.x.demo.dto.http.response.SayingDto;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.ext.web.RoutingContext;
 
@@ -38,7 +40,7 @@ public class HelloWorldHandler implements Consumer<io.vertx.mutiny.ext.web.Routi
       .orElse(config.getDefaultName());
     routingContext
       .response()
-      .putHeader("Content-Type", "application/json")
+      .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
       .endAndForget(
         JsonObject
           .mapFrom(createResponse(config.getTemplate(), name))

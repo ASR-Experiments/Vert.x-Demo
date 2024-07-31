@@ -1,6 +1,8 @@
 package com.asr.example.vert.x.demo.handler.user;
 
 import com.asr.example.vert.x.demo.service.UserService;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
@@ -42,11 +44,11 @@ public class FindAllUserHandler implements Consumer<RoutingContext> {
             LOGGER.warn("No users found");
             routingContext.response()
               .setStatusCode(404)
-              .end();
+              .endAndForget(JsonArray.of().encode());
           } else {
             LOGGER.info("Users found");
             routingContext.response()
-              .putHeader("Content-Type", "application/json")
+              .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
               .endAndForget(
                 users
                   .stream()

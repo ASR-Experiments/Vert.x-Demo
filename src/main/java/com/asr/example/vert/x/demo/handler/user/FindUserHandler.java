@@ -2,6 +2,8 @@ package com.asr.example.vert.x.demo.handler.user;
 
 import com.asr.example.vert.x.demo.service.UserService;
 import com.asr.example.vert.x.demo.util.ResponseUtil;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
@@ -48,7 +50,7 @@ public class FindUserHandler implements Consumer<RoutingContext> {
           } else {
             LOGGER.info("User found for id: " + id);
             routingContext.response()
-              .putHeader("Content-Type", "application/json")
+              .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
               .endAndForget(JsonObject.mapFrom(user).encode());
           }
         }

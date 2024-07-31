@@ -1,5 +1,7 @@
 package com.asr.example.vert.x.demo.util;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.http.HttpServerResponse;
 
@@ -19,7 +21,7 @@ public record ResponseUtil() {
     if (otherData != null && !otherData.isEmpty())
       body.putAll(otherData);
     response
-      .putHeader("Content-Type", "application/json")
+      .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
       .endAndForget(JsonObject.mapFrom(body).encode());
   }
 

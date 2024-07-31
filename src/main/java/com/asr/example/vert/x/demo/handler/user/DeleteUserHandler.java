@@ -2,6 +2,8 @@ package com.asr.example.vert.x.demo.handler.user;
 
 import com.asr.example.vert.x.demo.service.UserService;
 import com.asr.example.vert.x.demo.util.ResponseUtil;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
@@ -23,8 +25,7 @@ public record DeleteUserHandler(UserService userService) implements Consumer<Rou
       LOGGER.warn("Invalid Id " + e.getMessage());
       ResponseUtil.addError(
         "Invalid Id " + e.getMessage(),
-        routingContext.response()
-          .setStatusCode(400),
+        routingContext.response().setStatusCode(400),
         ResponseUtil.formError(e)
       );
       return;
@@ -45,7 +46,7 @@ public record DeleteUserHandler(UserService userService) implements Consumer<Rou
             LOGGER.debug("User deleted successfully");
             routingContext.response()
               .setStatusCode(200)
-              .putHeader("content-type", "application/json")
+              .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
               .endAndForget(JsonObject.mapFrom(user).encode());
           }
         }

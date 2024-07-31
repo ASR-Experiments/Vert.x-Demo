@@ -3,6 +3,8 @@ package com.asr.example.vert.x.demo.handler.user;
 import com.asr.example.vert.x.demo.domain.UserEntity;
 import com.asr.example.vert.x.demo.service.UserService;
 import com.asr.example.vert.x.demo.util.ResponseUtil;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
@@ -43,7 +45,7 @@ public record UpdateUserHandler(UserService userService) implements Consumer<Rou
           LOGGER.debug("User deleted successfully");
           context.response()
             .setStatusCode(200)
-            .putHeader("content-type", "application/json")
+            .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
             .endAndForget(JsonObject.mapFrom(entity).encode());
         }
       });
