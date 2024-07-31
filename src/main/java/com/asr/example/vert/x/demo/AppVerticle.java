@@ -3,13 +3,13 @@ package com.asr.example.vert.x.demo;
 
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
 import com.asr.example.vert.x.demo.config.DatabaseConfiguration;
+import com.asr.example.vert.x.demo.handler.common.FailureHandler;
 import com.asr.example.vert.x.demo.repository.UserRepository;
 import com.asr.example.vert.x.demo.route.EmployeeRoute;
 import com.asr.example.vert.x.demo.route.HealthCheckRoute;
 import com.asr.example.vert.x.demo.route.HelloWorldRoute;
 import com.asr.example.vert.x.demo.route.UserRoute;
 import com.asr.example.vert.x.demo.service.UserService;
-import com.asr.example.vert.x.demo.util.ResponseUtil;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -50,6 +50,9 @@ public class AppVerticle extends AbstractVerticle {
                 LOGGER.debug("Database setup completed");
 
                 // Initializing services
+                // Handlers
+                final FailureHandler failureHandler = new FailureHandler();
+
                 // Web client
                 final WebClient webClient = WebClient.create(vertx);
 
@@ -63,17 +66,7 @@ public class AppVerticle extends AbstractVerticle {
                 // Attaching routes
                 final Router apiRoute = Router.router(vertx);
                 router.route("/api/*")
-                  .failureHandler(routingContext -> {
-                    if (routingContext.response().ended()) {
-                      return;
-                    }
-                    LOGGER.error("Error while processing request", routingContext.failure());
-                    ResponseUtil.addError(
-                      "Internal Server Error",
-                      routingContext.response().setStatusCode(500),
-                      ResponseUtil.formError(routingContext.failure())
-                    );
-                  })
+                  .failureHandler(failureHandler)
                   .subRouter(apiRoute);
 
                 LOGGER.debug("Attaching routes");
