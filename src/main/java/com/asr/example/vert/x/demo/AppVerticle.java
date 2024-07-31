@@ -4,6 +4,7 @@ package com.asr.example.vert.x.demo;
 import com.asr.example.vert.x.demo.config.BaseConfiguration;
 import com.asr.example.vert.x.demo.config.DatabaseConfiguration;
 import com.asr.example.vert.x.demo.handler.common.FailureHandler;
+import com.asr.example.vert.x.demo.handler.common.IdempotencyHandler;
 import com.asr.example.vert.x.demo.repository.UserRepository;
 import com.asr.example.vert.x.demo.route.EmployeeRoute;
 import com.asr.example.vert.x.demo.route.HealthCheckRoute;
@@ -51,6 +52,7 @@ public class AppVerticle extends AbstractVerticle {
 
                 // Initializing services
                 // Handlers
+                final IdempotencyHandler idempotencyHandler = new IdempotencyHandler();
                 final FailureHandler failureHandler = new FailureHandler();
 
                 // Web client
@@ -66,6 +68,7 @@ public class AppVerticle extends AbstractVerticle {
                 // Attaching routes
                 final Router apiRoute = Router.router(vertx);
                 router.route("/api/*")
+                  .handler(idempotencyHandler)
                   .failureHandler(failureHandler)
                   .subRouter(apiRoute);
 
