@@ -48,7 +48,9 @@ update and delete users.
 3. It also covers the Database interactions with a postgres database, check [Pre-requisites](###Database-setup).
    - To access the endpoint, hit the following URL in the **cURL** or other clients:
       ```shell
-         curl --location 'localhost:8080/api/user'
+         curl --location 'localhost:8080/api/user' \
+              --header 'X-Idempotency-Token: b415d958-b617-404b-80e9-009202a82395' \
+
       ```
      > It will return a response similar to following.
      ```json
@@ -57,6 +59,7 @@ update and delete users.
    - To create a user, hit the following URL in **cURL** or other clients:
      ```shell
         curl --location 'localhost:8080/api/user' \
+              --header 'X-Idempotency-Token: b415d958-b617-404b-80e9-009202a82395' \
               --header 'Content-Type: application/json' \
               --data-raw '{
               "name": "user",
@@ -76,7 +79,8 @@ update and delete users.
 
 4. Additionally, it also covers downstream calls using `EmployeeRoute`. To test try the following api:
    ```shell
-    curl --location 'http://localhost:8080/api/employee'
+    curl --location 'http://localhost:8080/api/employee' \
+         --header 'X-Idempotency-Token: b415d958-b617-404b-80e9-009202a82395'
     ```
    - It should return response similar to following:
      ```json

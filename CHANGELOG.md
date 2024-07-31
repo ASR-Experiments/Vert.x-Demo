@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## **Iteration 4**: [0.0.4] - 2024-07-31
+
+1. Added 2 sample filters on Request and response respectively:
+   1. `IdempotencyHandler` filters the request based on the `X-Idempotency-Token` header.
+      * It expects a unique header for each requests.
+      * If header is not present then it invalidates the request.
+      * If header is already used in a prior requests, it still invalidates the request.
+   2. `PoweredByHandler` adds a header `X-Powered-By` to the response.
+      * If configuration `poweredBy` is present, than value is set to be the same.
+      * Otherwise, it defaults to `ASR`.
+
 ## **Iteration 3**: [0.0.3] - 2024-07-29
 
 1. A basic Rest endpoint to interact with another downstream Rest API.
