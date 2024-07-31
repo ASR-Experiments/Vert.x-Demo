@@ -1,11 +1,13 @@
 package com.asr.example.vert.x.demo.config;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 public class BaseConfiguration {
   String template;
   String defaultName;
+  String poweredBy;
   Map<String, Object> database;
 
   public Properties getDatabaseAsProperties() {
@@ -36,6 +38,14 @@ public class BaseConfiguration {
 
   public void setDefaultName(String defaultName) {
     this.defaultName = defaultName;
+  }
+
+  public Optional<String> getPoweredBy() {
+    return Optional.ofNullable(poweredBy);
+  }
+
+  public void setPoweredBy(String poweredBy) {
+    this.poweredBy = poweredBy;
   }
 
   private static void flattenJsonObject(
